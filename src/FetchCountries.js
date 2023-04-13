@@ -8,9 +8,9 @@ class CountriesApiService {
   fetchCountries() {
     return fetch(
       `https://restcountries.com/v3.1/name/${this.searchQuery}?${this.options}`
-    )
-      .then(res => res.json())
-      .then(data => console.log(data));
+    ).then(data => {
+      return data.json();
+    });
   }
 
   get query() {

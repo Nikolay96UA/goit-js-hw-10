@@ -20,6 +20,39 @@ function onSubmit(ev) {
   const searchValue = refs.searchBox.value;
   countriesApiService.query = searchValue.trim();
   countriesApiService.fetchCountries();
+  // fetchArticles();
 }
 
-function createCountryList({}) {}
+// function fetchArticles() {
+//   return getArticlesMarkup().then(markup => {
+//     updateNewsList(markup);
+//   });
+// }
+
+// function getArticlesMarkup() {
+//   return countriesApiService.fetchCountries().then(({ country }) => {
+//     return country.reduce(
+//       (markup, country) => markup + createMarkup(country),
+//       ''
+//     );
+//   });
+
+//   function createMarkup({ name, capital, population, flags, languages }) {
+//     return `
+//       <div class="article-card">
+//           <h2 class="country-name">${name}</h2>
+//           <h3 class="country-capital">${capital || 'Unknown'}</h3>
+//           <h3 class="country-population">${population || 'Unknown'}</h3>
+//           <img src=${
+//             flags ||
+//             'https://sun9-43.userapi.com/impf/c637716/v637716451/5754/CZa3BJtbJtg.jpg?size=520x0&quality=95&sign=02df8d0cd8ae78099bc1f50938efd60a'
+//           } class="country-flags">
+//           <p class="country-languages">${languages}</p>
+//       </div>
+//     `;
+//   }
+// }
+
+// function updateNewsList(markup) {
+//   refs.countryInfo.insertAdjacentHTML('beforeend', markup);
+// }
