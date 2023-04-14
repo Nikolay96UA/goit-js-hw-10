@@ -1,6 +1,7 @@
 import './css/styles.css';
 import { CountriesApiService } from './FetchCountries';
 const debounce = require('lodash.debounce');
+import Notiflix from 'notiflix';
 
 const DEBOUNCE_DELAY = 300;
 
@@ -12,47 +13,82 @@ const refs = {
   countryInfo: document.querySelector('.country-info'),
 };
 
-refs.searchBox.addEventListener('input', debounce(onSubmit, DEBOUNCE_DELAY));
+refs.searchBox.addEventListener('input', debounce(callback, DEBOUNCE_DELAY));
 
-function onSubmit(ev) {
+function callback(ev) {
   ev.preventDefault();
-
+  clearMarkup();
   const searchValue = refs.searchBox.value;
   countriesApiService.query = searchValue.trim();
-  countriesApiService.fetchCountries();
-  // fetchArticles();
+
+  countriesApiService
+    .fetchCountries()
+    .then(countries => {
+      if (countries.length > 10) {
+        Notiflix.Notify.info(
+          'Too many matches found. Please enter a more specific name.'
+        );
+        return;
+      }
+
+      if (countries.length === 1) {
+        return renderCounteryInfo(countries);
+      }
+
+      if (countries.length > 2 && countries.length < 10) {
+        return renderCounterList(countries);
+      }
+    })
+    .catch(error => {
+      if (error) {
+        Notiflix.Notify.failure('Oops, there is no country with that name');
+      }
+    });
 }
 
-// function fetchArticles() {
-//   return getArticlesMarkup().then(markup => {
-//     updateNewsList(markup);
-//   });
-// }
+function renderCounterList(countries) {
+  const markupList = countries
+    .map(({ name: { official }, flags: { png } }) => {
+      return `<li class="country-items">
+      <img class="country-flag" src= ${png}>
+      <p class="country-name">${official}</p>
+      </li>`;
+    })
+    .join('');
+  refs.countryList.innerHTML = markupList;
+}
 
-// function getArticlesMarkup() {
-//   return countriesApiService.fetchCountries().then(({ country }) => {
-//     return country.reduce(
-//       (markup, country) => markup + createMarkup(country),
-//       ''
-//     );
-//   });
+function renderCounteryInfo(countries) {
+  const markupInfo = countries
+    .map(
+      ({
+        name: { official },
+        flags: { png },
+        capital,
+        population,
+        languages,
+      }) => {
+        return `<div>
+        <div class="country">
+        <img class="country-flag" src= ${png}>
 
-//   function createMarkup({ name, capital, population, flags, languages }) {
-//     return `
-//       <div class="article-card">
-//           <h2 class="country-name">${name}</h2>
-//           <h3 class="country-capital">${capital || 'Unknown'}</h3>
-//           <h3 class="country-population">${population || 'Unknown'}</h3>
-//           <img src=${
-//             flags ||
-//             'https://sun9-43.userapi.com/impf/c637716/v637716451/5754/CZa3BJtbJtg.jpg?size=520x0&quality=95&sign=02df8d0cd8ae78099bc1f50938efd60a'
-//           } class="country-flags">
-//           <p class="country-languages">${languages}</p>
-//       </div>
-//     `;
-//   }
-// }
+        <h1 class="info__country-name">${official}</h1>
 
-// function updateNewsList(markup) {
-//   refs.countryInfo.insertAdjacentHTML('beforeend', markup);
-// }
+        </div>
+
+        <p class="meta-info"><span class="title">Capital:</span> ${capital}</p>
+        <p class="meta-info"><span class="title">Population:</span> ${population}</p>
+        <p class="meta-info"><span class="title">Languages:</span> ${Object.values(
+          languages
+        )}</p>
+        </div>`;
+      }
+    )
+    .join('');
+  refs.countryInfo.innerHTML = markupInfo;
+}
+
+function clearMarkup() {
+  refs.countryInfo.innerHTML = '';
+  refs.countryList.innerHTML = '';
+}

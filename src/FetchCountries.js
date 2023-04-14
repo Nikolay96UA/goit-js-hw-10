@@ -3,13 +3,17 @@ class CountriesApiService {
     this.searchQuery = '';
   }
 
-  options = 'fields=name.official,capital,population,flags.svg,languages';
+  options = 'fields=name,capital,population,flags,languages';
 
   fetchCountries() {
     return fetch(
       `https://restcountries.com/v3.1/name/${this.searchQuery}?${this.options}`
-    ).then(data => {
-      return data.json();
+    ).then(response => {
+      if (!response.ok) {
+        throw new Error('No data');
+      }
+
+      return response.json();
     });
   }
 
